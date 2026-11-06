@@ -33,7 +33,7 @@
 
 ### 1. 建私有仓库 + 开写权限
 
-`Use this template → Create a new repository`，可见性必须选 `Private`。
+`fork`，可见性必须选 `Private`。
 再到 `Settings → Actions → General → Workflow permissions` 选
 `Read and write permissions` 并保存 —— 工作流要把续期后的 Token 写回仓库。
 
