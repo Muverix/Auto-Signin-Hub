@@ -1,0 +1,88 @@
+name: Auto Signin Hub
+
+on:
+  workflow_dispatch:
+    inputs:
+      apps:
+        description: "要运行的平台，逗号分隔（留空=全部）"
+        required: false
+        default: "workbuddy,qoder,trae,doubao"
+      dry_run:
+        description: "只查状态不领取（首次配置建议先跑一次）"
+        required: false
+        type: boolean
+        default: false
+  schedule:
+    # UTC: Beijing 07:00 / 10:05 / 12:00 / 23:30
+    # 10:05 对应 Qoder 每日活动 10:00 刷新窗口
+    - cron: "0 23 * * *"
+    - cron: "5 2 * * *"
+    - cron: "0 4 * * *"
+    - cron: "30 15 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Run daily signins
+        env:
+          # WorkBuddy：首次用 Secret 自举，之后优先用私有仓库里轮换后的 JSON。
+          DAILY_BOOTSTRAP_TOKEN: ${{ secrets.WORKBUDDY_REFRESH_TOKEN }}
+          # Qoder / Trae CN / 豆包：一份 JSON 装三个平台的凭据，见 signin/accounts.example.json。
+          SIGNIN_ACCOUNTS: ${{ secrets.SIGNIN_ACCOUNTS }}
+          QODER_ACCOUNTS: ${{ secrets.QODER_ACCOUNTS }}
+          TRAE_ACCOUNTS: ${{ secrets.TRAE_ACCOUNTS }}
+          DOUBAO_ACCOUNTS: ${{ secrets.DOUBAO_ACCOUNTS }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          # 手动运行时可只挑几个平台；定时触发时为空 = 全部。
+          SIGNIN_APPS: ${{ github.event.inputs.apps }}
+          INPUT_DRY_RUN: ${{ github.event.inputs.dry_run }}
+        run: |
+          if [ -s wb_refresh_tokens.json ]; then
+            echo "Using the rotated token stored in this private repository"
+          elif [ -n "$DAILY_BOOTSTRAP_TOKEN" ]; then
+            export WORKBUDDY_REFRESH_TOKEN="$DAILY_BOOTSTRAP_TOKEN"
+            echo "Initializing token state from repository secret"
+          else
+            echo "No WorkBuddy credential: WorkBuddy will be skipped, other apps still run"
+          fi
+          args=""
+          if [ "$INPUT_DRY_RUN" = "true" ]; then args="--dry-run"; fi
+          python run_all.py $args
+
+      - name: Persist rotated token
+        if: success()
+        run: |
+          # 只配置了其它三个平台时没有续期文件，跳过而不是让整个 job 失败。
+          if [ ! -s wb_refresh_tokens.json ]; then
+            echo "No WorkBuddy token state to persist (skipped)"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f wb_refresh_tokens.json
+          if git diff --cached --quiet; then
+            echo "Token state is unchanged"
+          else
+            git commit -m "chore: update token state [skip ci]"
+            git push
+          fi

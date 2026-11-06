@@ -1,0 +1,46 @@
+{
+  "qoder": [
+    {
+      "name": "Qoder CN",
+      "base_url": "https://openapi.qoder.com.cn",
+      "token": "<CN 版 auth.v1.dat 解出的 access token>",
+      "machine_token": "<CN 版 runtime-info 输出的 machineToken>",
+      "machine_code": "<CN 版 runtime-info 输出的 machineCode>",
+      "machine_type": "<CN 版 runtime-info 输出的 machineType>",
+      "machine_id": "<com.qodercn.app.stable/auth.machine-id 文件内容>",
+      "machine_os": "x86_64_windows",
+      "machine_hostname": "<本机 hostname>",
+      "version": "<CN 版 build-manifest.json 的 productVersion>"
+    },
+    {
+      "name": "Qoder 国际版",
+      "base_url": "https://openapi.qoder.sh",
+      "token": "<国际版 auth.v1.dat 解出的 access token，与 CN 版不同>",
+      "machine_token": "<国际版 runtime-info 输出的 machineToken>",
+      "machine_code": "<国际版 runtime-info 输出的 machineCode>",
+      "machine_type": "<国际版 runtime-info 输出的 machineType>",
+      "machine_id": "<com.qoder.app.stable/auth.machine-id 文件内容>",
+      "machine_os": "x86_64_windows",
+      "machine_hostname": "<本机 hostname>",
+      "version": "<国际版 build-manifest.json 的 productVersion>"
+    }
+  ],
+  "trae": [
+    {
+      "name": "主号",
+      "token": "<storage.json 解出的 JWT>",
+      "device_id": "<iCubeAuthInfo://icube-dc: 之后的值；Trae CN 3.4.15+ 形如 aha-加32位hex，旧版为 8-20 位纯数字。不要填 telemetry.devDeviceId 的 UUID>",
+      "app_version": "<iCubeLastVersion>",
+      "device_brand": "<可选>",
+      "device_type": "<可选>",
+      "os_version": "<可选>"
+    }
+  ],
+  "doubao": [
+    {
+      "name": "主号",
+      "cookie": "sessionid=<32位十六进制>; sid_tt=<...>; <其余豆包会话 Cookie>",
+      "campaign_code": "pc_incentive_task_mvp_v3"
+    }
+  ]
+}

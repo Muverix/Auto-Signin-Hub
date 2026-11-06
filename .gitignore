@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+WORKBUDDY_ACCESS_TOKEN.txt
+wb_refresh_tokens.json
+# 本机导出的真实凭据（.example.json 模板不含真实值，可提交）
+# accounts.local.json 是多账号合并用的本地镜像（tools/ 下，与导出脚本同目录），含明文，绝不提交
+accounts.local.json
+signin_accounts.json
+secrets.json
+exported_secrets.json
+# 旧脚本目录（待手动移入回收站前先忽略，避免误提交）
+1/
+2/
